@@ -108,28 +108,12 @@ Goal:
 2. Write 'rationale' (Korean) explaining the concept to the user.
 3. Write 'prompt' (English) for Stable Diffusion/ControlNet.
 
-Output JSON Schema:
-{
-  "rationale": "기획 의도 및 컨셉 설명 (한글, 2-3문장)",
-  "prompt": "High quality English prompt for image generation (Photorealistic, 8k, Detailed texture)",
-  "prompt_breakdown": {
-    "subject": "Main subject details",
-    "materials_texture": "Material and texture details",
-    "lighting": "Lighting setup",
-    "camera": "Camera settings",
-    "composition": "Composition details",
-    "background": "Background description",
-    "postprocess": "Post-processing style"
-  },
-  "negative_prompt": "Things to avoid"
-}
-
 Constraint:
 - No text/watermarks in image.
 - Style: '${input.imageStyle}'
-- Final prompt must be at least 120~200 words.
-- Camera: Include at least 2 of Lens(mm), Aperture, Shutter/ISO.
-- Lighting: Include Direction + Intensity + Reflection/Highlight description.
+- **IMPORTANT**: prompt는 최대 3~4문장, 400자 이내로 작성한다.
+- 8K, UHD, ultra-detailed, 렌즈, 카메라 세팅, 조명 세부값 등 장식적 기술어는 사용하지 않는다.
+- Focus on the main subject, composition, and lighting atmosphere only.
 `;
 
     if (input.originalImage) {
@@ -153,11 +137,21 @@ Constraint:
       },
     ];
     
+    // 구조화된 JSON 출력을 강제하기 위한 스키마 정의
+    const responseSchema = {
+      type: "object",
+      properties: {
+        rationale: { type: "string" },
+        prompt: { type: "string" }
+      },
+      required: ["rationale", "prompt"]
+    };
+    
     const responseText = await generateContentWithSmartFallback(
         apiKey,
         contents,
         systemInstruction,
-        undefined,
+        responseSchema,
         { responseMimeType: 'application/json' }
     );
     

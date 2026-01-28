@@ -135,16 +135,7 @@ export function useDetailPlanning() {
    - **인물 모델이 필요한 경우, 반드시 'Korean model'로 명시하세요.**
    - 텍스트는 이미지에 포함하지 마세요 (No text).
 
-**출력 형식 (JSON Only):**
-{
-  "sections": [
-    {
-      "title": "섹션 제목 (무조건 한국어)",
-      "keyMessage": "핵심 메시지/카피 (무조건 한국어, 20자 이내)",
-      "visualPrompt": "이미지 생성을 위한 상세한 영문 프롬프트 (English). 인물 등장 시 'Korean model' 필수 포함."
-    }
-  ]
-}
+**중요:** 출력은 반드시 유효한 JSON 형식이어야 합니다.
 `;
 
       const userPrompt = `
@@ -168,11 +159,31 @@ ${imagePart ? '첨부된 상품 이미지를 분석하여 이를 반영해 기�
         { role: 'user', parts },
       ];
 
+      // 구조화된 JSON 출력을 위한 스키마
+      const responseSchema = {
+        type: "object",
+        properties: {
+          sections: {
+            type: "array",
+            items: {
+              type: "object",
+              properties: {
+                title: { type: "string" },
+                keyMessage: { type: "string" },
+                visualPrompt: { type: "string" }
+              },
+              required: ["title", "keyMessage", "visualPrompt"]
+            }
+          }
+        },
+        required: ["sections"]
+      };
+
       const text = await generateContentWithSmartFallback(
         apiKey,
         contents,
         systemInstruction,
-        undefined,
+        responseSchema,
         {
           responseMimeType: 'application/json',
           // modelQueueOverride 제거 -> 전역 설정 따름 (일관성 확보)
